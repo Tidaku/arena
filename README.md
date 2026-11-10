@@ -10,10 +10,10 @@ Projet de groupe BTS SIO — Bloc 1, 2026-2027.
 | Membre | Option | Rôle dans le projet |
 | --- | --- | --- |
 | Tiago Da Cunha | SLAM | Application (Laravel) |
-| *à compléter* | SLAM | Application (Laravel) |
-| *à compléter* | SISR | Serveur, réseau, hébergement |
-| *à compléter* | SISR | Serveur, réseau, hébergement |
-| *à compléter* | SISR | Serveur, réseau, hébergement |
+| Sacha Dumont | SLAM | Application (Laravel) |
+| Julien Lim | SISR | Serveur, réseau, hébergement |
+| Victor Jiang | SISR | Serveur, réseau, hébergement |
+| Benjamin Quantin | SISR | Serveur, réseau, hébergement |
 
 ## Technologies
 
