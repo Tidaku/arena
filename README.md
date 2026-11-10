@@ -33,6 +33,3 @@ Projet de groupe BTS SIO — Bloc 1, 2026-2027.
 | `docs/` | Dictionnaire de données, MCD/MLD, support, guide GitHub |
 | `.github/` | Modèles de tickets (incident, évolution) et de pull request |
 
-## Travailler à plusieurs
-
-Lire [CONTRIBUTING.md](CONTRIBUTING.md) avant le premier commit : on ne pousse jamais directement sur `main`.
