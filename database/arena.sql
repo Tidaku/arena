@@ -1,7 +1,7 @@
 -- =====================================================================
 -- Arena — script de création de la base (MPD issu du MLD)
--- SGBD : MySQL 8 (Laragon) — testé aussi sur MariaDB 10.11
--- Usage : mysql -u root < database/arena.sql   (ou import dans HeidiSQL)
+-- SGBD : MySQL 8 (Laragon)
+-- Usage : import dans HeidiSQL (Fichier > Charger un fichier SQL)
 -- =====================================================================
 
 DROP DATABASE IF EXISTS arena;
@@ -63,7 +63,7 @@ CREATE TABLE sport (
 -- TERRAIN (id_terrain, nom_terrain, surface_terrain, couvert_terrain,
 --          eclaire_terrain, materiel_fourni_terrain,
 --          nb_joueurs_min_terrain, nb_joueurs_max_terrain,
---          tarif_horaire_terrain, photo_terrain, #id_complexe)
+--          tarif_horaire_terrain, photo_terrain, #id_complexe, #id_sport)
 -- ---------------------------------------------------------------------
 CREATE TABLE terrain (
     id_terrain              INT UNSIGNED     NOT NULL AUTO_INCREMENT,
@@ -77,24 +77,14 @@ CREATE TABLE terrain (
     tarif_horaire_terrain   DECIMAL(6,2)     NOT NULL DEFAULT 0 COMMENT '0 = gratuit',
     photo_terrain           VARCHAR(255)     NULL COMMENT 'Nom du fichier image',
     id_complexe             INT UNSIGNED     NOT NULL,
+    id_sport                INT UNSIGNED     NOT NULL COMMENT 'Un seul sport par terrain',
     CONSTRAINT pk_terrain PRIMARY KEY (id_terrain),
     CONSTRAINT fk_terrain_complexe FOREIGN KEY (id_complexe)
         REFERENCES complexe (id_complexe) ON DELETE RESTRICT ON UPDATE CASCADE,
+    CONSTRAINT fk_terrain_sport FOREIGN KEY (id_sport)
+        REFERENCES sport (id_sport) ON DELETE RESTRICT ON UPDATE CASCADE,
     CONSTRAINT ck_terrain_joueurs CHECK (nb_joueurs_min_terrain <= nb_joueurs_max_terrain),
     CONSTRAINT ck_terrain_tarif   CHECK (tarif_horaire_terrain >= 0)
-) ENGINE=InnoDB;
-
--- ---------------------------------------------------------------------
--- ACCUEILLIR (#id_terrain, #id_sport)  — association n,n Terrain / Sport
--- ---------------------------------------------------------------------
-CREATE TABLE accueillir (
-    id_terrain INT UNSIGNED NOT NULL,
-    id_sport   INT UNSIGNED NOT NULL,
-    CONSTRAINT pk_accueillir PRIMARY KEY (id_terrain, id_sport),
-    CONSTRAINT fk_accueillir_terrain FOREIGN KEY (id_terrain)
-        REFERENCES terrain (id_terrain) ON DELETE CASCADE ON UPDATE CASCADE,
-    CONSTRAINT fk_accueillir_sport FOREIGN KEY (id_sport)
-        REFERENCES sport (id_sport) ON DELETE RESTRICT ON UPDATE CASCADE
 ) ENGINE=InnoDB;
 
 -- ---------------------------------------------------------------------
@@ -140,34 +130,28 @@ INSERT INTO sport (libelle_sport) VALUES
 INSERT INTO complexe (nom_complexe, rue_complexe, cp_complexe, ville_complexe,
     latitude_complexe, longitude_complexe, heure_ouverture_complexe,
     heure_fermeture_complexe, vestiaires_complexe) VALUES
-('City Foot Belleville',     '12 rue des Lilas',        '75019', 'Paris',   48.876200, 2.384500, '09:00', '23:00', TRUE),
-('Gymnase des Buttes',       '4 avenue du Parc',        '75019', 'Paris',   48.880100, 2.381900, '08:00', '22:00', TRUE),
-('Tennis Club du Canal',     '30 quai de la Marne',     '75019', 'Paris',   48.888600, 2.379300, '08:00', '21:00', TRUE),
-('Playground Jaurès',        'Square Jean-Jaurès',      '93500', 'Pantin',  48.893800, 2.401000, '07:00', '22:00', FALSE);
+('City Foot Belleville', '12 rue des Lilas',    '75019', 'Paris',  48.876200, 2.384500, '09:00', '23:00', TRUE),
+('Gymnase des Buttes',   '4 avenue du Parc',    '75019', 'Paris',  48.880100, 2.381900, '08:00', '22:00', TRUE),
+('Tennis Club du Canal', '30 quai de la Marne', '75019', 'Paris',  48.888600, 2.379300, '08:00', '21:00', TRUE),
+('Playground Jaurès',    'Square Jean-Jaurès',  '93500', 'Pantin', 48.893800, 2.401000, '07:00', '22:00', FALSE);
 
+-- Sports : Terrain 1 et 2 = Football, Salle A = Basket, Court central = Tennis,
+--          Court 2 = Padel, Playground = Basket
 INSERT INTO terrain (nom_terrain, surface_terrain, couvert_terrain, eclaire_terrain,
     materiel_fourni_terrain, nb_joueurs_min_terrain, nb_joueurs_max_terrain,
-    tarif_horaire_terrain, photo_terrain, id_complexe) VALUES
-('Terrain 1',     'Synthétique',  FALSE, TRUE,  TRUE,  6, 10, 80.00, 'cityfoot-t1.jpg', 1),
-('Terrain 2',     'Synthétique',  TRUE,  TRUE,  TRUE,  6, 10, 96.00, 'cityfoot-t2.jpg', 1),
-('Salle A',       'Parquet',      TRUE,  TRUE,  FALSE, 2, 12, 40.00, 'buttes-a.jpg',    2),
-('Court central', 'Terre battue', FALSE, TRUE,  FALSE, 2, 4,  22.00, 'canal-central.jpg', 3),
-('Court 2',       'Résine',       TRUE,  TRUE,  TRUE,  2, 4,  28.00, 'canal-2.jpg',     3),
-('Playground',    'Bitume',       FALSE, FALSE, FALSE, 2, 10,  0.00, NULL,              4);
-
--- Terrain 1 et 2 : football ; Salle A : basket, volley, badminton (gymnase multisport)
--- Courts : tennis ; Court 2 : tennis et padel ; Playground : football et basket
-INSERT INTO accueillir (id_terrain, id_sport) VALUES
-(1, 1), (2, 1),
-(3, 2), (3, 5), (3, 6),
-(4, 3), (5, 3), (5, 4),
-(6, 1), (6, 2);
+    tarif_horaire_terrain, photo_terrain, id_complexe, id_sport) VALUES
+('Terrain 1',     'Synthétique',       FALSE, TRUE,  TRUE,  6, 10, 80.00, 'cityfoot-t1.jpg',   1, 1),
+('Terrain 2',     'Synthétique',       TRUE,  TRUE,  TRUE,  6, 10, 96.00, 'cityfoot-t2.jpg',   1, 1),
+('Salle A',       'Parquet',           TRUE,  TRUE,  FALSE, 2, 12, 40.00, 'buttes-a.jpg',      2, 2),
+('Court central', 'Terre battue',      FALSE, TRUE,  FALSE, 2, 4,  22.00, 'canal-central.jpg', 3, 3),
+('Court 2',       'Gazon synthétique', TRUE,  TRUE,  TRUE,  2, 4,  28.00, 'canal-2.jpg',       3, 4),
+('Playground',    'Bitume',            FALSE, FALSE, FALSE, 2, 10,  0.00, NULL,                4, 2);
 
 INSERT INTO client (nom_cli, prenom_cli, mail_cli, mdp_cli, cp_cli, ville_cli, role_cli) VALUES
-('Support', 'Arena', 'admin@arena.test',  '$2y$10$hQwCdyZULEQm7iIEcNWZMu0VvB.XyG0lWhd6H/rK.JMksVMOfVoCu', NULL,    NULL,    'admin'),
+('Support', 'Arena', 'admin@arena.test',   '$2y$10$hQwCdyZULEQm7iIEcNWZMu0VvB.XyG0lWhd6H/rK.JMksVMOfVoCu', NULL,    NULL,    'admin'),
 ('Martin',  'Léa',   'lea.martin@test.fr', '$2y$10$hQwCdyZULEQm7iIEcNWZMu0VvB.XyG0lWhd6H/rK.JMksVMOfVoCu', '75019', 'Paris', 'client');
 
--- Une réservation confirmée de 18 h à 19 h 30 sur le Terrain 1 (exemple de la slide « créneaux »)
+-- Une réservation confirmée de 18 h à 19 h 30 sur le Terrain 1, et une annulée
 INSERT INTO reservation (date_seance_reserv, heure_debut_reserv, duree_reserv, heure_fin_reserv,
     nb_joueurs_reserv, prix_reserv, statut_reserv, id_cli, id_terrain) VALUES
 ('2026-12-02', '18:00', 90, '19:30', 10, 120.00, 'confirmée', 2, 1),

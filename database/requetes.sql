@@ -26,9 +26,8 @@ WHERE id_terrain = 1
 -- ---------------------------------------------------------------------
 SELECT t.id_terrain, c.nom_complexe, t.nom_terrain, t.tarif_horaire_terrain
 FROM terrain t
-JOIN complexe   c ON c.id_complexe = t.id_complexe
-JOIN accueillir a ON a.id_terrain  = t.id_terrain
-JOIN sport      s ON s.id_sport    = a.id_sport
+JOIN complexe c ON c.id_complexe = t.id_complexe
+JOIN sport    s ON s.id_sport    = t.id_sport
 WHERE s.libelle_sport = 'Football'
   AND t.eclaire_terrain = TRUE
   AND t.couvert_terrain = TRUE
